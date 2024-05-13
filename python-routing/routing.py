@@ -13,6 +13,10 @@ def distance_matrix(points):
             D[i][j] = euclidean_distance(u, v)
     return D
 
+def make_row(npoints, ones):
+    row = np.zeros(npoints)
+    
+
 def routing_model(points):
     npoints = len(points)
     nindices = npoints * npoints

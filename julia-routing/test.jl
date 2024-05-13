@@ -1,4 +1,4 @@
-using Gurobi
+using GLPK
 include("structs.jl")
 include("show.jl")
 include("routing.jl")

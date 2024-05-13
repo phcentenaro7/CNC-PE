@@ -1,4 +1,3 @@
-using Gurobi
 using JuMP
 include("structs.jl")
 
