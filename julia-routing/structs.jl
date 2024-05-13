@@ -55,7 +55,7 @@ function get_all_hole_centroids(board::Board)
     for row in 1:board.nrows, col in 1:board.ncols
         x, y  = get_piece_coordinates(board, row, col)
         for coord in coords
-            push!(centroids, (x, y) .+ coord .+ (radius, radius))
+            push!(centroids, (x, y) .+ coord)
         end
     end
     return centroids

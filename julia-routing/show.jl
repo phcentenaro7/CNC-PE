@@ -22,12 +22,12 @@ function show_board(board::Board)
                 x1 = xrect + circ[1] + radius, y1 = yrect + circ[2] + radius,
                 fillcolor = "White"
             ))
-            push!(nodes, attr(
-                x = xrect + circ[1] + radius * 4,
-                y = yrect + circ[2] + radius,
-                text = "$hole_index",
-                showarrow = false)
-            )
+            # push!(nodes, attr(
+            #     x = xrect + circ[1] + radius * 4,
+            #     y = yrect + circ[2] + radius,
+            #     text = "$hole_index",
+            #     showarrow = false)
+            # )
             hole_index += 1
         end
     end
