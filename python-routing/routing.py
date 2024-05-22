@@ -1,4 +1,4 @@
-import glpk
+#import glpk
 import numpy as np
 from math import sqrt, pow, floor
 
@@ -13,42 +13,57 @@ def distance_matrix(points):
             D[i][j] = euclidean_distance(u, v)
     return D
 
-def make_row(npoints, ones):
-    row = np.zeros(npoints)
-    
+def insert_row_constraint(matrix, row_index):
+    nvars = int(sqrt(matrix.shape[1]))
+    row = []
+    for i in range(0, nvars):
+        if i != row_index:
+            row = np.concatenate((row, np.zeros(nvars)))
+        else:
+            row = np.concatenate((row, np.ones(nvars)))
+    return np.append(matrix, [row], axis=0)
+
+def insert_column_constraint(matrix, col_index):
+    nvars = int(sqrt(matrix.shape[1]))
+    row = []
+    for j in range(0, nvars):
+        row = np.concatenate((row, np.zeros(col_index)))
+        row = np.concatenate((row, np.ones(1)))
+        row = np.concatenate((row, np.zeros(nvars - col_index - 1)))
+    return np.append(matrix, [row], axis=0)
+
+def insert_loop_constraint(matrix, index):
+    nvars = int(sqrt(matrix.shape[1]))
+    row = np.zeros(int(pow(nvars, 2)))
+    true_index = index * (nvars + 1)
+    row[true_index] = 1
+    return np.append(matrix, [row], axis=0)
 
 def routing_model(points):
     npoints = len(points)
-    nindices = npoints * npoints
+    nindices = pow(npoints, 2)
     D = distance_matrix(points)
     model = glpk.LPX()
     model.name = 'routing'
     model.obj.maximize = False
     model.rows.add(3 * npoints)
+    model.cols.add(nindices)
     matrix = []
     for row in model.rows:
         if row.index < npoints:
-            pattern = npoints * np.array([row.index, 1, npoints - (row.index + 1)])
-            matrix += np.repeat([0, 1, 0], pattern).tolist()
+            matrix = insert_row_constraint(matrix, row.index)
             row.bounds = 1
-            row.name = 'rowsum%d' % row.index
+            row.name = 'rowsum%d' % (row.index)
         elif row.index < 2 * npoints:
             col_index = row.index - npoints
-            pattern = np.repeat([0, 1, 0], [col_index, 1, npoints - 1 - col_index])
-            matrix += np.tile(pattern, npoints).tolist()
+            matrix = insert_column_constraint(matrix, col_index)
             row.bounds = 1
-            row.name = 'colsum%d' % (row.index - npoints)
-            print(len(np.tile(pattern, npoints).tolist()))
-            print(np.tile(pattern, npoints).tolist())
+            row.name = 'colsum%d' % (col_index)
         else:
-            row_index = row.index - 2 * npoints
-            col_index = row_index * (npoints) + row_index
-            pattern = np.zeros((npoints * npoints))
-            pattern[col_index] = 1
-            matrix += pattern.tolist()
+            var_index = row.index - 2 * npoints
+            matrix = insert_loop_constraint(matrix, var_index)
             row.bounds = 0
-            row.name = "subcycle%d" % (row.index - 2 * npoints)
-    model.cols.add(nindices)
+            row.name = "subcycle%d" % (var_index)
     model.matrix = matrix
     for col in model.cols:
         i = floor(col.index / npoints)
@@ -64,5 +79,12 @@ points = [[2, 2],
           [6, 1],
           [7, 4]]
 
-model = routing_model(points)
-print(model.matrix)
+#model = routing_model(points)
+#print(model.matrix)
+
+matrix = np.empty((0, 100))
+matrix = insert_loop_constraint(matrix, 0)
+matrix = insert_loop_constraint(matrix, 3)
+#matrix = insert_row_constraint(matrix, 10, 0)
+#matrix = insert_row_constraint(matrix, 10, 1)
+print(matrix)
