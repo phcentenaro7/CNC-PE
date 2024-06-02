@@ -1,4 +1,5 @@
-#import glpk
+import glpk
+import re
 import numpy as np
 from math import sqrt, pow, floor
 
@@ -41,14 +42,15 @@ def insert_loop_constraint(matrix, index):
 
 def routing_model(points):
     npoints = len(points)
-    nindices = pow(npoints, 2)
+    nindices = int(pow(npoints, 2))
     D = distance_matrix(points)
     model = glpk.LPX()
     model.name = 'routing'
     model.obj.maximize = False
     model.rows.add(3 * npoints)
     model.cols.add(nindices)
-    matrix = []
+    
+    matrix = np.empty((0, nindices))
     for row in model.rows:
         if row.index < npoints:
             matrix = insert_row_constraint(matrix, row.index)
@@ -64,7 +66,7 @@ def routing_model(points):
             matrix = insert_loop_constraint(matrix, var_index)
             row.bounds = 0
             row.name = "subcycle%d" % (var_index)
-    model.matrix = matrix
+    model.matrix = np.concatenate(matrix)
     for col in model.cols:
         i = floor(col.index / npoints)
         j = col.index - (i * npoints)
@@ -73,18 +75,63 @@ def routing_model(points):
         model.obj[i * npoints + j] = D[i][j]
     return model
 
+def get_adjacency_matrix(model):
+    length = int(sqrt(len(model.cols)))
+    matrix = np.zeros((length, length))
+    for col in model.cols:
+        if col.primal == 1:
+            i, j = list(map(int, re.findall("\d+", col.name)))
+            matrix[i, j] = 1
+    return matrix
+
+def get_cycles(model):
+    cycles = []
+    current_cycle = []
+    unvisited_points = list(range(0, int(sqrt(len(model.cols)))))
+    while len(unvisited_points) > 0:
+        current_point = unvisited_points[0]
+        current_cycle.append(current_point)
+        for col in model.cols:
+            start_point, end_point = list(map(int, re.findall("\d+", col.name)))
+            print('%g - (%g, %g)' % (current_point, start_point, end_point))
+            if start_point != current_point:
+                continue
+            if col.primal == 1:
+                if end_point == current_cycle[0]:
+                    cycles.append(current_cycle)
+                    current_cycle = []
+                print(col.name)
+                unvisited_points.remove(end_point)
+                current_cycle.append(end_point)
+                current_point = end_point
+    return cycles
+
+class Callback:
+    def select(self, tree):
+        pass
+    def prepro(self, tree):
+        pass
+    def rowgen(self, tree):
+        tree.lp.obj.value_m
+        return
+    def heur(self, tree):
+        pass
+    def cutgen(self, tree):
+        pass
+    def branch(self, tree):
+        pass
+    def bingo(self, tree):
+        pass
+
 points = [[2, 2],
           [2, 6],
           [4, 6],
           [6, 1],
           [7, 4]]
 
-#model = routing_model(points)
-#print(model.matrix)
-
-matrix = np.empty((0, 100))
-matrix = insert_loop_constraint(matrix, 0)
-matrix = insert_loop_constraint(matrix, 3)
-#matrix = insert_row_constraint(matrix, 10, 0)
-#matrix = insert_row_constraint(matrix, 10, 1)
-print(matrix)
+model = routing_model(points)
+model.simplex()
+for col in model.cols:
+    print(col.name)
+    print(col.primal)
+print(get_adjacency_matrix(model))
