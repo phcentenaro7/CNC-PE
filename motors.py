@@ -31,14 +31,19 @@ motor_x = 0
 motor_y = 0
 speed = 100
 
-with open("route", "r") as file:
-    line = file.readline()
-    while line != "":
-        target_x, target_y = line.split(",")
-        target_x, target_y = float(target_x), float(target_y)
-        rotation_x = CW if target_x > motor_x else CCW
-        rotation_y = CW if target_y > motor_y else CCW
-        run_steps(DIR_X, STEP_X, rotation_x, speed, (target_x - motor_x) / STEP_LENGTH)
-        run_steps(DIR_Y, STEP_Y, rotation_y, speed, (target_y - motor_y) / STEP_LENGTH)
-        motor_x = target_x
-        motor_y = target_y
+try:
+    with open("route", "r") as file:
+        line = file.readline()
+        while line != "":
+            target_x, target_y = line.split(",")
+            target_x, target_y = float(target_x), float(target_y)
+            rotation_x = CW if target_x > motor_x else CCW
+            rotation_y = CW if target_y > motor_y else CCW
+            run_steps(DIR_X, STEP_X, rotation_x, speed, (target_x - motor_x) / STEP_LENGTH)
+            run_steps(DIR_Y, STEP_Y, rotation_y, speed, (target_y - motor_y) / STEP_LENGTH)
+            motor_x = target_x
+            motor_y = target_y
+
+except KeyboardInterrupt:
+    None
+    GPIO.cleanup()
