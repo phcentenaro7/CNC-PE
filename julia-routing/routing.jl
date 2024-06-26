@@ -76,6 +76,7 @@ function get_optimal_route(board::Board, optimizer)
     distance_matrix = get_distance_matrix(centroids)
     model = get_routing_model(distance_matrix, optimizer)
     optimize!(model)
+    print("Found best route with objective value $(objective_value(model))")
     return value.(model[:X])
 end
 
