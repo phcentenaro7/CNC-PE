@@ -124,84 +124,7 @@ def insert_cycle_constraints(matrix, cycles):
         matrix = np.append(matrix, [row], axis=0)
     return matrix
 
-# class Callback:
-#     def select(self, tree):
-#         pass
-#     def prepro(self, tree):
-#         pass
-#     def rowgen(self, tree):
-#         X = get_adjacency_matrix(tree.lp)
-#         cycles = get_cycles(X)
-#         npoints = int(X.shape[0])
-#         i = len(tree.lp.rows)
-#         if len(cycles) > 1:
-#             tree.lp.rows.add(2 * len(cycles))
-#         for cycle in cycles:
-#             tree.lp.rows[i].bounds = 0, len(cycle) - 1
-#             tree.lp.rows[i+1].bounds = 0, len(cycle) - 1
-#             row = cycle_to_constraint(cycle, npoints)
-#             tree.lp.matrix.extend(row.tolist())
-#             row = cycle_to_constraint(np.flip(cycle), npoints)
-#             tree.lp.matrix.extend(row.tolist())
-#             i += 2
-#         return
-#     def heur(self, tree):
-#         pass
-#     def cutgen(self, tree):
-#         pass
-#     def branch(self, tree):
-#         pass
-#     def bingo(self, tree):
-#         pass
-
-points = [[7.0, 7.5],
-          [28.0, 7.5],
-          [7.0, 16.5],
-          [28.0, 16.5],
-          [50.9, 7.5],
-          [71.9, 7.5],
-          [50.9, 16.5],
-          [71.9, 16.5],
-          [94.8, 7.5],
-          [115.8, 7.5],
-          [94.8, 16.5],
-          [115.8, 16.5],
-          [138.7, 7.5],
-          [159.7, 7.5],
-          [138.7, 16.5],
-          [159.7, 16.5],
-          [182.6, 7.5],
-          [203.6, 7.5],
-          [182.6, 16.5],
-          [203.6, 16.5],
-          [226.5, 7.5],
-          [247.5, 7.5],
-          [226.5, 16.5],
-          [247.5, 16.5],
-          [7.0, 116.5],
-          [28.0, 116.5],
-          [7.0, 125.5],
-          [28.0, 125.5],
-          [50.9, 116.5],
-          [71.9, 116.5],
-          [50.9, 125.5],
-          [71.9, 125.5],
-          [94.8, 116.5],
-          [115.8, 116.5],
-          [94.8, 125.5],
-          [115.8, 125.5],
-          [138.7, 116.5],
-          [159.7, 116.5],
-          [138.7, 125.5],
-          [159.7, 125.5],
-          [182.6, 116.5],
-          [203.6, 116.5],
-          [182.6, 125.5],
-          [203.6, 125.5],
-          [226.5, 116.5],
-          [247.5, 116.5],
-          [226.5, 125.5],
-          [247.5, 125.5]]
+points = [[10, 10], [20, 10], [10, 20], [20, 20]]
 
 cycles = []
 i = 1
@@ -219,4 +142,6 @@ while True:
     print("%g" % (model.obj.value))
 
 X = get_adjacency_matrix(model)
-print("%g" % (model.obj.value))
+with open("route", "w") as file:
+    for i in range(len(points)):
+        file.write("{},{}\n".format(points[i][0], points[i][1]))
